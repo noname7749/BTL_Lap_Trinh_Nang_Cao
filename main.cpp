@@ -13,6 +13,13 @@ BaseObject g_ground;
 TTF_Font* g_font_text = NULL;
 TTF_Font* g_font_MENU = NULL;
 
+bool is_paused = false;
+
+bool show_start_screen = true;
+int countdown_timer = 0;
+
+
+
 bool InitData() {
     BOOL bSucess = true;
     int ret = SDL_Init(SDL_INIT_VIDEO);
@@ -79,9 +86,12 @@ void close() {
 }
 
 int main(int argc, char* argv[]) {
+
     if (InitData() == false) {
         return -1;
     }
+
+    ShowStartScreen(g_screen, g_font_MENU);
 
     ImpTimer fps;
     bool quit = false;
@@ -118,10 +128,23 @@ again_label:
         return -1;
 
     while (!quit) {
+        if (show_start_screen) {
+            ShowStartScreen(g_screen, g_font_MENU);
+            show_start_screen = false; 
+        }
+
         fps.start();
         while (SDL_PollEvent(&g_event) != 0) {
             if (g_event.type == SDL_QUIT) {
                 quit = true;
+            }
+
+            if (g_event.type == SDL_KEYDOWN && g_event.key.keysym.sym == SDLK_SPACE) {
+                is_paused = !is_paused; 
+            }
+
+            if (!is_paused) {
+                player.HandleInputAction(g_event, g_screen);
             }
 
             player.HandleInputAction(g_event, g_screen);
@@ -185,6 +208,76 @@ again_label:
                 goto again_label;
             }
         }
+
+        if (!is_paused) {
+            SDL_SetRenderDrawColor(g_screen, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR);
+            SDL_RenderClear(g_screen);
+
+            g_background.Render(g_screen, NULL);
+
+            manage_block.SetPlayerRect(player.GetRect());
+
+            bool is_falling = player.GetFalling();
+            if (is_falling == true) {
+                manage_block.SetStopMoving(true);
+            }
+
+            manage_block.Render(g_screen);
+
+            bool end_game = manage_block.GetColState();
+            if (end_game == true) {
+                player.SetFalling(true);
+            }
+            player.DoFalling(g_screen);
+            player.Show(g_screen);
+
+            GeometricFormat rectange_size(0, 0, SCREEN_WIDTH, 30);
+            ColorData color_data(36, 36, 36);
+            Geometric::RenderRectangle(rectange_size, color_data, g_screen);
+
+            GeometricFormat outlie_size(1, 1, SCREEN_WIDTH - 1, 28);
+            ColorData color_data1(255, 255, 255);
+            Geometric::RenderOutline(outlie_size, color_data1, g_screen);
+
+            int count = manage_block.GetCount();
+            std::string count_str = std::to_string(count);
+            text_count_.SetText(count_str);
+            text_count_.loadFromRenderedText(g_font_text, g_screen);
+            text_count_.RenderText(g_screen, SCREEN_WIDTH * 0.5, 2);
+
+            g_ground.Render(g_screen);
+            SDL_RenderPresent(g_screen);
+
+            bool game_over = player.GetIsDie();
+            if (game_over == true) {
+                Sleep(500);
+                int ret_menu = SDLCommonFunc::ShowMenu(g_screen, g_font_MENU, "Player Again", "Exit", "img//MENU END.png");
+                if (ret_menu == 1) {
+                    quit = true;
+                    continue;
+                }
+                else {
+                    quit = false;
+                    manage_block.FreeBlock();
+                    goto again_label;
+                }
+            }
+        }
+        else {
+            SDL_SetRenderDrawColor(g_screen, 0, 0, 0, 255); 
+            SDL_RenderClear(g_screen);
+
+            SDL_Color text_color = { 255, 0, 0 }; 
+            TextObject pause_text;
+            pause_text.SetText("PAUSE GAME");
+            pause_text.setColor(text_color.r, text_color.g, text_color.b);
+            pause_text.loadFromRenderedText(g_font_MENU, g_screen);
+            pause_text.RenderText(g_screen, SCREEN_WIDTH * 0.5 - pause_text.getWidth() / 2, SCREEN_HEIGHT * 0.5 - pause_text.getHeight() / 2);
+
+            SDL_RenderPresent(g_screen);
+        }
+
+
 
         int val1 = fps.get_ticks();
         if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND) {
