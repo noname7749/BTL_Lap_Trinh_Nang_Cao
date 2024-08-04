@@ -53,4 +53,6 @@ namespace SDLCommonFunc {
     int MyRandom(int min, int max);
 }
 
+void ShowStartScreen(SDL_Renderer* g_screen, TTF_Font* font);
+
 #endif 
