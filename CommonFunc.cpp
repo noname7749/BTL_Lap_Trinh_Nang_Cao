@@ -1,4 +1,4 @@
-
+#include "stdafx.h"
 #include "CommonFunc.h"
 
 int SDLCommonFunc::ShowMenu(SDL_Renderer* g_screen, TTF_Font* font,
@@ -223,27 +223,3 @@ bool SDLCommonFunc::CheckCollision(const SDL_Rect& object1, const SDL_Rect& obje
 
     return false;
 }
-
-void SDLCommonFunc::ShowStartScreen(SDL_Renderer* g_screen, TTF_Font* font) {
-    const std::vector<std::string> messages = { "1", "2", "3", "Ready", "Go" };
-    SDL_Color text_color = { 255, 255, 255 }; 
-    TextObject countdown_text;
-
-    for (const auto& message : messages) {
-        countdown_text.SetText(message);
-        countdown_text.setColor(text_color.r, text_color.g, text_color.b);
-        countdown_text.loadFromRenderedText(font, g_screen);
-
-        SDL_SetRenderDrawColor(g_screen, 0, 0, 0, 255);
-        SDL_RenderClear(g_screen);
-
-        int x = SCREEN_WIDTH / 2 - countdown_text.getWidth() / 2;
-        int y = SCREEN_HEIGHT / 2 - countdown_text.getHeight() / 2;
-        countdown_text.RenderText(g_screen, x, y);
-
-        SDL_RenderPresent(g_screen);
-        SDL_Delay(1000); 
-    }
-}
-
-
