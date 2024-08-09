@@ -1,4 +1,4 @@
-
+#include "stdafx.h"
 #include "PlayerObject.h"
 
 PlayerObject::PlayerObject()
@@ -12,7 +12,7 @@ PlayerObject::~PlayerObject()
     Free();
 }
 
-void PlayerObject::HandleInputAction(SDL_Event events, SDL_Renderer* screen)
+void PlayerObject::HandleInputAction(SDL_Event events, SDL_Renderer* screen, Mix_Chunk* flap_sound)
 {
     if (events.type == SDL_KEYDOWN)
     {
@@ -23,6 +23,10 @@ void PlayerObject::HandleInputAction(SDL_Event events, SDL_Renderer* screen)
             if (is_falling_ == false)
             {
                 y_val_ = -15;
+                if (Mix_PlayChannel(-1, flap_sound, 0) == -1)
+                {
+                    printf(Mix_GetError());
+                }
             }
         }
         }
@@ -41,7 +45,7 @@ void PlayerObject::HandleInputAction(SDL_Event events, SDL_Renderer* screen)
 }
 
 
-bool PlayerObject::LoadImg(std::string path, SDL_Renderer* screen)
+bool PlayerObject::LoadImg(string path, SDL_Renderer* screen)
 {
     bool ret = BaseObject::LoadImageFile(path, screen);
     return ret;
@@ -51,10 +55,9 @@ void PlayerObject::Show(SDL_Renderer* des)
 {
     BaseObject::Render(des);
 }
-
 void PlayerObject::DoFalling(SDL_Renderer* des)
 {
-    rect_.y += y_val_;
+    rect_.y += y_val_ * 0.6;
     if ((rect_.y + rect_.h) >= GROUND_MAP)
     {
         LoadImg("img//fl_bird2.png", des);
@@ -69,3 +72,12 @@ void PlayerObject::DoGround(SDL_Renderer* screen)
     rect_.y = GROUND_MAP - rect_.h;
     is_die_ = true;
 }
+void PlayerObject::Reset()
+{
+    is_falling_ = false;
+    is_die_ = false;
+    rect_.x = 100;
+    rect_.y = 100;
+    y_val_ = 1;
+}
+
