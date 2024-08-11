@@ -1,13 +1,14 @@
-#include "stdafx.h"
 #include "CommonFunc.h"
 #include "PlayerObject.h"
 #include "ImpTimer.h"
 #include "BlockObject.h"
 #include "Geometric.h"
+#include "HighScoreManager.h"
+#include "TextObject.h"
+#include <iostream>
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 640
-
 
 BaseObject g_background;
 BaseObject g_ground;
@@ -19,6 +20,11 @@ TTF_Font* g_font_countdown = NULL;
 Mix_Music* g_background_music = NULL;
 Mix_Chunk* flap_sound = NULL;
 Mix_Chunk* game_over_sound = NULL;
+
+
+
+
+
 
 bool InitData()
 {
@@ -34,6 +40,8 @@ bool InitData()
 		SDL_WINDOWPOS_UNDEFINED,
 		SCREEN_WIDTH, SCREEN_HEIGHT,
 		SDL_WINDOW_OPENGL);
+
+
 
 	if (g_window != NULL)
 	{
@@ -101,6 +109,10 @@ bool LoadBackground()
 
 void close()
 {
+
+
+
+
 	g_background.Free();
 	SDL_DestroyRenderer(g_screen);
 	g_screen = NULL;
@@ -119,6 +131,8 @@ int main(int argc, char* argv[])
 	{
 		return -1;
 	}
+
+	HighScoreManager high_score_manager;
 
 	ImpTimer fps;
 	bool quit = false;
@@ -158,6 +172,7 @@ int main(int argc, char* argv[])
 	}
 	g_ground.SetRect(0, GROUND_MAP);
 
+
 again_label:
 
 	TextObject text_count_;
@@ -189,6 +204,8 @@ again_label:
 
 	bool is_paused = false;
 
+	bool game_over = false; 
+	int current_score = 0;  
 
 	while (!quit)
 	{
@@ -225,7 +242,7 @@ again_label:
 				g_background.Render(g_screen, NULL);
 				g_ground.Render(g_screen, NULL);
 				for (int i = 3; i >= 1; i--) {
-					std::string count_str = std::to_string(i);
+					string count_str = to_string(i);
 					countdown_text.SetText(count_str);
 					countdown_text.loadFromRenderedText(g_font_countdown, g_screen);
 					countdown_text.RenderText(g_screen, SCREEN_WIDTH * 0.45, SCREEN_HEIGHT * 0.3);
@@ -251,6 +268,7 @@ again_label:
 
 				game_started = true;
 			}
+
 
 			manage_block.SetPlayerRect(player.GetRect());
 
@@ -283,6 +301,7 @@ again_label:
 			Gemometric::RenderOutline(outlie_size, color_data1, g_screen);
 
 			int count = manage_block.GetCount();
+
 			string score_str = "Score: " + to_string(count);
 			score_text.SetText(score_str);
 			score_text.loadFromRenderedText(g_font_text, g_screen);
@@ -293,8 +312,20 @@ again_label:
 			bool game_over = player.GetIsDie();
 			if (game_over == true)
 			{
+			
+
 				Mix_PlayChannel(-1, game_over_sound, 0);
 				Sleep(500);
+
+				high_score_manager.UpdateHighScore(count);
+
+				TextObject text;
+				text.setColor(TextObject::BLACK_TEXT); 
+
+				text.RenderHighScore(g_screen, g_font_text, high_score_manager.GetHighScore());
+				SDL_RenderPresent(g_screen);
+				SDL_Delay(5000);  
+
 				int ret_menu = SDLCommonFunc::ShowMenu(g_screen, g_font_MENU,
 					"Player Again", "Exit",
 					"img//MENU END.png");
@@ -311,6 +342,21 @@ again_label:
 					game_started = false;
 					goto again_label;
 				}
+			}
+
+			if (game_over) {
+				
+				high_score_manager.UpdateHighScore(current_score);
+				high_score_manager.SaveHighScore();
+
+				
+				TextObject text;
+				text.setColor(TextObject::WHITE_TEXT);  
+				text.RenderHighScore(g_screen, g_font_text, high_score_manager.GetHighScore());
+				SDL_RenderPresent(g_screen);
+				SDL_Delay(5000);  
+
+				
 			}
 
 			int val1 = fps.get_ticks();
