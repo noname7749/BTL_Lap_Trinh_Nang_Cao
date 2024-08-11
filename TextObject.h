@@ -1,51 +1,96 @@
 
-
-
-#ifndef TEXT_OBJECT_H_
-#define TEXT_OBJECT_H_
-
-#include "CommonFunc.h"
+#include "TextObject.h"
 #include "HighScoreManager.h"
 
-#include <string>
-#include <SDL.h>
-#include <SDL_ttf.h>
 
 
-class TextObject
+ 
+
+TextObject::TextObject() : texture_(NULL), width_(0), height_(0) {
+    text_color_.r = 255;
+    text_color_.g = 255;
+    text_color_.b = 255;
+}
+
+TextObject::~TextObject()
 {
-public:
-    TextObject();
-    ~TextObject();
+    Free();
+}
 
-    bool loadFromRenderedText(TTF_Font* gFont, SDL_Renderer* screen);
-    void Free();
-    void setColor(Uint8 red, Uint8 green, Uint8 blue);
-    void setColor(int type);
-    void RenderText(SDL_Renderer* screen, int x, int y, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
-    void RenderHighScore(SDL_Renderer* screen, TTF_Font* font, int high_score);
+void TextObject::SetText(const std::string& text) {
+    str_val_ = text;
+}
 
-    string GetText() const;
-    void SetText(const string& text); 
 
-    int getWidth() const { return width_; }
-    int getHeight() const { return height_; }
+bool TextObject::loadFromRenderedText(TTF_Font* gFont, SDL_Renderer* screen)
+{
+    SDL_Surface* textSurface = TTF_RenderText_Solid(gFont, str_val_.c_str(), text_color_);
+    if (textSurface != NULL)
+    {
+        texture_ = SDL_CreateTextureFromSurface(screen, textSurface);
+        if (texture_ != NULL)
+        {
+            width_ = textSurface->w;
+            height_ = textSurface->h;
+        }
 
-    static const int RED_TEXT = 1;
-    static const int WHITE_TEXT = 2;
-    static const int BLACK_TEXT = 3;
+        SDL_FreeSurface(textSurface);
+    }
 
-    
+    return texture_ != NULL;
+}
 
-private:
-    string str_val_;
-    SDL_Color text_color_;
-    SDL_Texture* texture_;
-    int width_;
-    int height_;
+void TextObject::Free()
+{
+    if (texture_ != NULL)
+    {
+        SDL_DestroyTexture(texture_);
+        texture_ = NULL;
+    }
+}
 
-   
-};
+void TextObject::setColor(Uint8 red, Uint8 green, Uint8 blue)
+{
+    text_color_.r = red;
+    text_color_.g = green;
+    text_color_.b = blue;
+}
 
-#endif
+void TextObject::setColor(int type)
+{
+    if (type == RED_TEXT)
+    {
+        SDL_Color color = { 255, 0, 0 };
+        text_color_ = color;
+    }
+    else if (type == WHITE_TEXT)
+    {
+        SDL_Color color = { 255, 255, 255 };
+        text_color_ = color;
+    }
+    else
+    {
+        SDL_Color color = { 0, 0, 0 };
+        text_color_ = color;
+    }
+}
+void TextObject::RenderText(SDL_Renderer* screen, int x, int y, SDL_Rect* clip /* = NULL */, double angle /* = 0.0 */, SDL_Point* center /* = NULL */, SDL_RendererFlip flip /* = SDL_FLIP_NONE */)
+{
 
+    SDL_Rect renderQuad = { x, y, width_, height_ };
+
+    if (clip != NULL)
+    {
+        renderQuad.w = clip->w;
+        renderQuad.h = clip->h;
+    }
+
+    SDL_RenderCopyEx(screen, texture_, clip, &renderQuad, angle, center, flip);
+}
+
+void TextObject::RenderHighScore(SDL_Renderer* screen, TTF_Font* font, int high_score) {
+    std::string text = "Best Score: " + std::to_string(high_score);
+    SetText(text);
+    loadFromRenderedText(font, screen);
+    RenderText(screen, 100, 100);   
+}
