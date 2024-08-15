@@ -19,6 +19,7 @@ TTF_Font* g_font_MENU = NULL;
 TTF_Font* g_font_countdown = NULL;
 Mix_Music* g_background_music = NULL;
 Mix_Chunk* flap_sound = NULL;
+Mix_Chunk* win_sound = NULL;
 Mix_Chunk* game_over_sound = NULL;
 
 
@@ -94,15 +95,21 @@ bool InitData()
 }
 
 
-bool LoadBackground()
+bool LoadBackground(const std::string& imagePath)
 {
 	g_background_music = Mix_LoadMUS("sound//nhacnen.mp3");
 	if (g_background_music == NULL)
 	{
-		printf(Mix_GetError());
+		std::cerr << "Failed to load background music: " << Mix_GetError() << std::endl;
 		return false;
 	}
-	bool ret = g_background.LoadImageFile("img//bkgn.png", g_screen);
+
+	bool ret = g_background.LoadImageFile(imagePath, g_screen);
+	if (!ret)
+	{
+		std::cerr << "Failed to load background image: " << imagePath << std::endl;
+	}
+
 	return ret;
 }
 
@@ -141,7 +148,7 @@ int main(int argc, char* argv[])
 	if (ret_menu == 1)
 		quit = true;
 
-	if (!LoadBackground())
+	if (!LoadBackground("img//bkgn.png"))
 	{
 		return -1;
 	}
@@ -164,6 +171,12 @@ int main(int argc, char* argv[])
 	if (game_over_sound == NULL) {
 		printf(Mix_GetError());
 	}
+
+	Mix_Chunk* win_sound = Mix_LoadWAV("sound//win.mp3");
+	if (win_sound == NULL) {
+		std::cerr << "Failed to load win sound: " << Mix_GetError() << std::endl;
+	}
+
 
 	bool ret = g_ground.LoadImageFile("img//ground2.png", g_screen);
 	if (ret == false)
@@ -204,8 +217,8 @@ again_label:
 
 	bool is_paused = false;
 
-	bool game_over = false; 
-	int current_score = 0;  
+	bool game_over = false;
+	int current_score = 0;
 
 	while (!quit)
 	{
@@ -312,19 +325,33 @@ again_label:
 			bool game_over = player.GetIsDie();
 			if (game_over == true)
 			{
-			
 
-				Mix_PlayChannel(-1, game_over_sound, 0);
+
+				Mix_PlayChannel(-1, win_sound, 0);
 				Sleep(500);
 
 				high_score_manager.UpdateHighScore(count);
 
+				if (!LoadBackground("img//bestscore.png"))
+				{
+					std::cerr << "Failed to load bestscore.png" << std::endl;
+					return -1;
+				}
+
+				SDL_RenderClear(g_screen); 
+				g_background.Render(g_screen, NULL);
+				SDL_RenderPresent(g_screen);
+				SDL_Delay(10000); 
+
+				high_score_manager.UpdateHighScore(count);
+				high_score_manager.SaveHighScore();
+
 				TextObject text;
-				text.setColor(TextObject::BLACK_TEXT); 
+				text.setColor(TextObject::BLACK_TEXT);
 
 				text.RenderHighScore(g_screen, g_font_text, high_score_manager.GetHighScore());
 				SDL_RenderPresent(g_screen);
-				SDL_Delay(5000);  
+				SDL_Delay(5000);
 
 				int ret_menu = SDLCommonFunc::ShowMenu(g_screen, g_font_MENU,
 					"Player Again", "Exit",
@@ -345,18 +372,19 @@ again_label:
 			}
 
 			if (game_over) {
-				
+
 				high_score_manager.UpdateHighScore(current_score);
 				high_score_manager.SaveHighScore();
 
-				
+
 				TextObject text;
-				text.setColor(TextObject::WHITE_TEXT);  
+				text.setColor(TextObject::WHITE_TEXT);
 				text.RenderHighScore(g_screen, g_font_text, high_score_manager.GetHighScore());
 				SDL_RenderPresent(g_screen);
-				SDL_Delay(5000);  
+				SDL_Delay(5000);
 
-				
+
+
 			}
 
 			int val1 = fps.get_ticks();
@@ -366,6 +394,10 @@ again_label:
 			}
 		}
 	}
+
+	Mix_FreeChunk(win_sound);
+	win_sound = NULL;
+
 	Mix_FreeChunk(game_over_sound);
 	game_over_sound = NULL;
 	close();
