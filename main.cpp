@@ -95,19 +95,19 @@ bool InitData()
 }
 
 
-bool LoadBackground(const std::string& imagePath)
+bool LoadBackground(const string& imagePath)
 {
 	g_background_music = Mix_LoadMUS("sound//nhacnen.mp3");
 	if (g_background_music == NULL)
 	{
-		std::cerr << "Failed to load background music: " << Mix_GetError() << std::endl;
+		cerr << "Failed to load background music: " << Mix_GetError() << endl;
 		return false;
 	}
 
 	bool ret = g_background.LoadImageFile(imagePath, g_screen);
 	if (!ret)
 	{
-		std::cerr << "Failed to load background image: " << imagePath << std::endl;
+		cerr << "Failed to load background image: " << imagePath << endl;
 	}
 
 	return ret;
@@ -174,7 +174,7 @@ int main(int argc, char* argv[])
 
 	Mix_Chunk* win_sound = Mix_LoadWAV("sound//win.mp3");
 	if (win_sound == NULL) {
-		std::cerr << "Failed to load win sound: " << Mix_GetError() << std::endl;
+		cerr << "Failed to load win sound: " << Mix_GetError() << endl;
 	}
 
 
@@ -325,32 +325,27 @@ again_label:
 			bool game_over = player.GetIsDie();
 			if (game_over == true)
 			{
-				// Phát âm thanh game over
 				Mix_PlayChannel(-1, game_over_sound, 0);
 				SDL_Delay(500);
 
-				// Cập nhật và lưu điểm cao nhất
 				high_score_manager.UpdateHighScore(count);
 				high_score_manager.SaveHighScore();
 
-				// Tải và hiển thị hình ảnh điểm số
 				if (!LoadBackground("img//bestscore.png"))
 				{
-					std::cerr << "Failed to load bestscore.png" << std::endl;
 					return -1;
 				}
 
 				SDL_RenderClear(g_screen);
 				g_background.Render(g_screen, NULL);
 
-				// Hiển thị điểm số
 				TextObject best_score_label;
 				best_score_label.setColor(TextObject::WHITE_TEXT);
 				best_score_label.SetText("Best Score is:");
 				best_score_label.loadFromRenderedText(g_font_text, g_screen);
 				best_score_label.RenderText(g_screen, SCREEN_WIDTH * 0.3, SCREEN_HEIGHT * 0.4);
 
-				std::string high_score_str = std::to_string(high_score_manager.GetHighScore());
+				string high_score_str = to_string(high_score_manager.GetHighScore());
 				TextObject high_score_value;
 				high_score_value.setColor(TextObject::WHITE_TEXT);
 				high_score_value.SetText(high_score_str);
@@ -363,7 +358,7 @@ again_label:
 				your_score_label.loadFromRenderedText(g_font_text, g_screen);
 				your_score_label.RenderText(g_screen, SCREEN_WIDTH * 0.3, SCREEN_HEIGHT * 0.55);
 
-				std::string score_str = std::to_string(count);
+				string score_str = to_string(count);
 				TextObject score_value;
 				score_value.setColor(TextObject::WHITE_TEXT);
 				score_value.SetText(score_str);
@@ -372,14 +367,12 @@ again_label:
 
 				SDL_RenderPresent(g_screen);
 
-				// Hiển thị điểm cao nhất
 				TextObject text;
 				text.setColor(TextObject::BLACK_TEXT);
 				text.RenderHighScore(g_screen, g_font_text, high_score_manager.GetHighScore(), count);
 				SDL_RenderPresent(g_screen);
 				SDL_Delay(10000);
 
-				// Hiển thị menu sau khi game over
 				int ret_menu = SDLCommonFunc::ShowMenu(g_screen, g_font_MENU, "Player Again", "Exit", "img//MENU END.png");
 				if (ret_menu == 1) {
 					quit = true;
@@ -389,7 +382,7 @@ again_label:
 					manage_block.FreeBlock();
 					player.Reset();
 					game_started = false;
-					continue;  // Bỏ qua phần còn lại của vòng lặp và tiếp tục
+					continue;  
 				}
 			}
 
