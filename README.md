@@ -178,3 +178,8 @@ chức năng để tạo cửa sổ, vẽ hình ảnh, và xử lý sự kiện 
   - Trái tim: thêm 1 mạng
   - Cây nấm: khiến cho con chim bị thôi miên, ống nước sẽ bị di chuyển ngẫu nhiên 
 - Tạo ra nhiều map và nhiều nhân vật hơn
+
+
+
+**Link demo**  Web tutorial SDL2: [Link](https://drive.google.com/file/d/1mfOA8P-xU473T7LtfnjXV535vakPU6ps/view?usp=sharing)
+
