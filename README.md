@@ -153,12 +153,28 @@ chức năng để tạo cửa sổ, vẽ hình ảnh, và xử lý sự kiện 
 > - Tạo các nút như: “start game”, “quit”
 >
 >- Hiển thị văn bản như: điểm số, bắt đầu game, kỉ lục
+>- Sử dụng file để 
 
 **5. Nguồn tham khảo**
 - Web tutorial SDL2: [Link](https://phattrienphanmem123az.com/lap-trinh-game-c-p2)
 - Mã nguồn tham khảo: [Link](https://drive.google.com/file/d/1ru5ppPdtNbaqDJVK5a4j0NCl_hL__KsM/view)
 - Bản quyền game gốc của Nguyễn Hà Đông(2013)
 - Hình ảnh và âm thanh được tham khảo từ [Link](https://drive.google.com/file/d/1ru5ppPdtNbaqDJVK5a4j0NCl_hL__KsM/view) và google.
-- Co
+- Có sử dụng ChatGPT để fix bug và tham khảo ý tưởng
 
-**6. 
+**6. Kinh nghiệm rút ra**
+- Học đuượ cách tách file 
+- Hiểu rõ hơn về con trỏ 
+- Học được thêm kiến thức về cài đặt, sử dụng thư viện mới
+- 
+
+
+**7. Hướng phát triển trong tương lai**
+- Tối ưu hóa game tốt hơn 
+- Thêm các vật phẩm riêng có tác dụng đặc biệt như: 
+  - đồng hồ cát: giảm tốc độ game
+  - viên kẹo(tăng một số điểm ngẫu nhiên) 
+  - tên lửa: bay nhanh với tốc độ cực nhanh bỏ qua vật cản
+  - Trái tim: thêm 1 mạng
+  - Cây nấm: khiến cho con chim bị thôi miên, ống nước sẽ bị di chuyển ngẫu nhiên 
+- Tạo ra nhiều map và nhiều nhân vật hơn
