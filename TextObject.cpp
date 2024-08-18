@@ -1,39 +1,39 @@
+
 #include "TextObject.h"
+#include "HighScoreManager.h"
+          
 
-
-TextObject::TextObject(void)
-{
+TextObject::TextObject() : texture_(NULL), width_(0), height_(0) {
     text_color_.r = 255;
     text_color_.g = 255;
     text_color_.b = 255;
 }
 
-
-TextObject::~TextObject(void)
+TextObject::~TextObject()
 {
+    Free();
+}
+
+void TextObject::SetText(const string& text) {
+    str_val_ = text;
 }
 
 
 bool TextObject::loadFromRenderedText(TTF_Font* gFont, SDL_Renderer* screen)
 {
-    //Render text surface
     SDL_Surface* textSurface = TTF_RenderText_Solid(gFont, str_val_.c_str(), text_color_);
     if (textSurface != NULL)
     {
-        //Create texture from surface pixels
         texture_ = SDL_CreateTextureFromSurface(screen, textSurface);
         if (texture_ != NULL)
         {
-            //Get image dimensions
             width_ = textSurface->w;
             height_ = textSurface->h;
         }
 
-        //Get rid of old surface
         SDL_FreeSurface(textSurface);
     }
 
-    //Return success
     return texture_ != NULL;
 }
 
@@ -73,16 +73,27 @@ void TextObject::setColor(int type)
 }
 void TextObject::RenderText(SDL_Renderer* screen, int x, int y, SDL_Rect* clip /* = NULL */, double angle /* = 0.0 */, SDL_Point* center /* = NULL */, SDL_RendererFlip flip /* = SDL_FLIP_NONE */)
 {
-    //Set rendering space and render to screen
+
     SDL_Rect renderQuad = { x, y, width_, height_ };
 
-    //Set clip rendering dimensions
     if (clip != NULL)
     {
         renderQuad.w = clip->w;
         renderQuad.h = clip->h;
     }
 
-    //Render to screen
     SDL_RenderCopyEx(screen, texture_, clip, &renderQuad, angle, center, flip);
 }
+
+void TextObject::RenderHighScore(SDL_Renderer* screen, TTF_Font* font, int high_score, int current_score) {
+    string best_score_text = "Best Score: " + to_string(high_score);
+    SetText(best_score_text);
+    loadFromRenderedText(font, screen);
+    RenderText(screen, 100, 150);
+
+    string your_score_text = "Your Score is: " + to_string(current_score);
+    SetText(your_score_text);
+    loadFromRenderedText(font, screen);
+    RenderText(screen, 100, 100);
+}
+
